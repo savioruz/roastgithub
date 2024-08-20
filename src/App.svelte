@@ -48,7 +48,7 @@
     return true;
   }
 
-  function handleRoast() {
+  async function handleRoast() {
     loading = true;
     if (!validateInput()) {
       loading = false;
@@ -80,20 +80,24 @@
       body: raw
     };
 
-    fetch(apiUrl, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
+    try {
+      const response = await fetch(apiUrl, requestOptions);
+      if (response.ok) {
+        const data = await response.json();
         result.generated_content = data.data.generated_content.replace(/\n/g, "<br>").replace(/\*/g, "");
         result.username = data.data.username;
         result.avatar_url = data.data.avatar_url;
-      })
-      .catch((error) => {
-        console.error(error);
-        errorMessage = "Profile not found or API error.";
-      })
-      .finally(() => {
-        loading = false;
-      });
+      } else if (response.status === 400) {
+        throw new Error("Invalid request.");
+      } else {
+        throw new Error("Profile not found or API error.");
+      }
+    } catch (error) {
+      console.error(error);
+      errorMessage = error as string;
+    } finally {
+      loading = false;
+    }
   }
 </script>
 
