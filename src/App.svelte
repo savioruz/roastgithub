@@ -7,7 +7,8 @@
   import { Skeleton } from "$lib/components/ui/skeleton";
   import {Bolt, LoaderCircle} from "lucide-svelte";
   import * as Collapsible from "$lib/components/ui/collapsible";
-  import * as Select from "$lib/components/ui/select/index.js";
+  import * as Select from "$lib/components/ui/select";
+  import * as Avatar from "$lib/components/ui/avatar";
   import Footer from "$lib/widgets/Footer.svelte";
   import Theme from "$lib/widgets/Theme.svelte";
 
@@ -17,10 +18,20 @@
     { value: "id", label: "Indonesia" }
   ]
 
+  type resultType = {
+    username: string;
+    generated_content: string;
+    avatar_url: string;
+  }
+
   let loading : boolean = false;
   let username : string = "";
   let lang : string = "auto";
-  let result : string = "";
+  let result : resultType = {
+    username: "",
+    generated_content: "",
+    avatar_url: ""
+  }
   let key : string = "";
   let errorMessage = "";
   const apiUrl = "https://roast.savioruz.me/api/roast";
@@ -28,6 +39,9 @@
   function validateInput() {
     if (!username.trim()) {
       errorMessage = "Username is required.";
+      return false;
+    } else if (username.length < 6 || username.length > 32) {
+      errorMessage = "Username must be between 6 and 32 characters.";
       return false;
     }
     errorMessage = "";
@@ -69,12 +83,13 @@
     fetch(apiUrl, requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        result = data.data.generated_content.replace(/\n/g, "<br>").replace(/\*]/g, "");
-        username = data.data.username;
+        result.generated_content = data.data.generated_content.replace(/\n/g, "<br>").replace(/\*/g, "");
+        result.username = data.data.username;
+        result.avatar_url = data.data.avatar_url;
       })
       .catch((error) => {
         console.error(error);
-        result = "An error occurred. Please try again.";
+        errorMessage = "Profile not found or API error.";
       })
       .finally(() => {
         loading = false;
@@ -83,7 +98,7 @@
 </script>
 
 <ModeWatcher />
-<main class="flex-grow container mx-auto px-4 py-16 max-w-4xl h-[90vmin]">
+<main class="flex-grow container mx-auto px-4 py-16 max-w-4xl min-h-[90vh]">
   <Card class="mb-12 shadow-lg">
     <CardHeader>
       <CardTitle>Roastgithub</CardTitle>
@@ -109,10 +124,17 @@
             <Skeleton class="h-[25px]" />
           </div>
         </div>
-      {:else if result}
+      {:else if result.generated_content}
         <div class="p-4 my-3">
-          <h2 class="text-lg text-gray-500">Roasting @{username}</h2><br>
-          <p>{@html result}</p>
+          <div class="flex justify-between">
+            <h2 class="text-lg text-gray-500">Roasting @{result.username}</h2>
+            <Avatar.Root>
+              <Avatar.Image src={result.avatar_url} alt="{result.username}" />
+              <Avatar.Fallback>avatar</Avatar.Fallback>
+            </Avatar.Root>
+          </div>
+          <br>
+          <p>{@html result.generated_content}</p>
         </div>
       {/if}
       {#if errorMessage}
