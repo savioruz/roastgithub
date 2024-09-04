@@ -34,7 +34,7 @@
   }
   let key : string = "";
   let errorMessage = "";
-  const apiUrl = "https://roast.savioruz.me/api/roast";
+  const apiUrl = "https://roast.savioruz.me/api/v1/roast";
 
   function validateInput() {
     if (!username.trim()) {
@@ -90,7 +90,7 @@
       } else if (response.status === 400) {
         throw new Error("Invalid request.");
       } else {
-        throw new Error("Profile not found or API error.");
+        throw new Error("Profile not found or API error. Please try again later.");
       }
     } catch (error) {
       console.error(error);
