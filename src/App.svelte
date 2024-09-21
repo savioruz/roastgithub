@@ -34,7 +34,7 @@
   }
   let key : string = "";
   let errorMessage = "";
-  const apiUrl = "https://roast.savioruz.me/api/v1/roast/github";
+  const apiUrl = "https://roastgithub-api.vercel.app/api/v1/roast/github";
 
   function validateInput() {
     if (!username.trim()) {
